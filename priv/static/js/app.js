@@ -1292,105 +1292,2159 @@ Object.defineProperty(exports, "__esModule", {
  }});
 if(typeof(window) === 'object' && !window.Phoenix){ window.Phoenix = require('phoenix') };
 require.register("web/static/js/app", function(exports, require, module) {
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var JQuery = $;
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+var _elixir = require('elixir');
+
+var _phoenix = require('phoenix');
+
+var __MODULE__ = _elixir.Erlang.atom('App');
+var sanitize = (0, _elixir.fun)([[_elixir.fun.parameter], function (html) {
+  return _elixir.JS.get_property_or_call_function(JQuery('<div/>').text(html), 'html');
+}]);
+var messageTemplate = (0, _elixir.fun)([[_elixir.fun.parameter], function (msg) {
+  var _fun$bind = _elixir.fun.bind(_elixir.fun.parameter, sanitize(_elixir.JS.get_property_or_call_function(msg, 'user') || 'anonymous'));
+
+  var _fun$bind2 = _slicedToArray(_fun$bind, 1);
+
+  var username0 = _fun$bind2[0];
+
+  var _fun$bind3 = _elixir.fun.bind(_elixir.fun.parameter, sanitize(_elixir.JS.get_property_or_call_function(msg, 'body')));
+
+  var _fun$bind32 = _slicedToArray(_fun$bind3, 1);
+
+  var body0 = _fun$bind32[0];
+
+  return '<p><a href=#>[' + (_elixir.Kernel.to_string(username0) + (']</a>&nbsp; ' + (_elixir.Kernel.to_string(body0) + '</p>')));
+}]);
+var init = (0, _elixir.fun)([[], function () {
+  var _fun$bind4 = _elixir.fun.bind(_elixir.fun.parameter, new _phoenix.Socket('/socket', {
+    'logger': (0, _elixir.fun)([[_elixir.fun.parameter, _elixir.fun.parameter, _elixir.fun.parameter], function (kind, msg, data) {
+      return console.debug(_elixir.Kernel.to_string(kind) + (': ' + _elixir.Kernel.to_string(msg)), data);
+    }])
+  }));
+
+  var _fun$bind42 = _slicedToArray(_fun$bind4, 1);
+
+  var socket0 = _fun$bind42[0];
+
+  socket0.connect({
+    'user_id': '123'
+  });
+
+  var _fun$bind5 = _elixir.fun.bind(_elixir.fun.parameter, JQuery('#status'));
+
+  var _fun$bind52 = _slicedToArray(_fun$bind5, 1);
+
+  var status0 = _fun$bind52[0];
+
+  var _fun$bind6 = _elixir.fun.bind(_elixir.fun.parameter, JQuery('messages'));
+
+  var _fun$bind62 = _slicedToArray(_fun$bind6, 1);
+
+  var messages0 = _fun$bind62[0];
+
+  var _fun$bind7 = _elixir.fun.bind(_elixir.fun.parameter, JQuery('message-input'));
+
+  var _fun$bind72 = _slicedToArray(_fun$bind7, 1);
+
+  var input0 = _fun$bind72[0];
+
+  var _fun$bind8 = _elixir.fun.bind(_elixir.fun.parameter, JQuery('#username'));
+
+  var _fun$bind82 = _slicedToArray(_fun$bind8, 1);
+
+  var username0 = _fun$bind82[0];
+
+  socket0.onOpen((0, _elixir.fun)([[_elixir.fun.parameter], function (ev) {
+    return console.debug('OPEN', ev);
+  }]));
+  socket0.onError((0, _elixir.fun)([[_elixir.fun.parameter], function (ev) {
+    return console.debug('ERROR', ev);
+  }]));
+  socket0.onClose((0, _elixir.fun)([[_elixir.fun.parameter], function (ev) {
+    return console.debug('CLOSE', ev);
+  }]));
+
+  var _fun$bind9 = _elixir.fun.bind(_elixir.fun.parameter, socket0.channel('rooms:lobby', {}));
+
+  var _fun$bind92 = _slicedToArray(_fun$bind9, 1);
+
+  var chan0 = _fun$bind92[0];
+
+  _elixir.JS.get_property_or_call_function(chan0, 'join').receive('ignore', (0, _elixir.fun)([[], function () {
+    return console.error('auth error');
+  }])).receive('ok', (0, _elixir.fun)([[], function () {
+    return console.info('join ok');
+  }])).after(10000, (0, _elixir.fun)([[], function () {
+    return console.info('Connection interruption');
+  }]));
+  chan0.onError((0, _elixir.fun)([[_elixir.fun.parameter], function (e) {
+    return console.log('Something went wrong', e);
+  }]));
+  chan0.onClose((0, _elixir.fun)([[_elixir.fun.parameter], function (e) {
+    return console.log('channel closed', e);
+  }]));
+  input0.off('keypress').on('keypress', (0, _elixir.fun)([[_elixir.fun.parameter], function (e) {
+    return (0, _elixir.fun)([[_elixir.fun.parameter], function (x) {
+      return null;
+    }, function (x) {
+      return _elixir.Kernel.__in__(x, _elixir.Erlang.list(false, null));
+    }], [[_elixir.fun.wildcard], function () {
+      chan0.push('new:msg', {
+        'user': _elixir.JS.get_property_or_call_function(username0, 'val'), 'body': _elixir.JS.get_property_or_call_function(input0, 'val')
+      });
+      return input0.val('');
+    }]).call(this, _elixir.JS.get_property_or_call_function(e, 'keyCode') == 13);
+  }]));
+  chan0.on('new:msg', (0, _elixir.fun)([[_elixir.fun.parameter], function (msg) {
+    messages0.append(messageTemplate(msg));
+    return scrollTo(0, _elixir.JS.get_property_or_call_function(_elixir.JS.get_property_or_call_function(document, 'body'), 'scrollHeight'));
+  }]));
+  return chan0.on('user:entered', (0, _elixir.fun)([[_elixir.fun.parameter], function (msg) {
+    var _fun$bind10 = _elixir.fun.bind(_elixir.fun.parameter, sanitize(_elixir.JS.get_property_or_call_function(msg, 'user') || 'anonymous'));
+
+    var _fun$bind102 = _slicedToArray(_fun$bind10, 1);
+
+    var username10 = _fun$bind102[0];
+
+    return messages0.append('<br/><i>[' + (_elixir.Kernel.to_string(username10) + ' entered]</i>'));
+  }]));
+}]);
+init();
+exports['default'] = {
+  init: init
+};
+module.exports = exports['default'];
+});
+
+;require.register("elixir", function(exports, require, module) {
 "use strict";
 
-var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _toConsumableArray = function (arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } };
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+var _applyConstructor = function (Constructor, args) { var instance = Object.create(Constructor.prototype); var result = Constructor.apply(instance, args); return result != null && (typeof result == "object" || typeof result == "function") ? result : instance; };
 
-var _phoenix = require("phoenix");
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+function MatchError(message) {
+  this.name = "MatchError";
+  this.message = message || "No match for arguments given";
+  this.stack = new Error().stack;
+}
 
-var Socket = _phoenix.Socket;
-var LongPoller = _phoenix.LongPoller;
+MatchError.prototype = Object.create(Error.prototype);
+MatchError.prototype.constructor = MatchError;
 
-var App = (function () {
-  function App() {
-    _classCallCheck(this, App);
+var Type = {
+  isSymbol: function isSymbol(value) {
+    return typeof x === "symbol";
+  },
+
+  isAtom: function isAtom(value) {
+    return !Type.isSymbol(value) && ((typeof value !== "object" || value === null) && typeof value !== "function") || Type.isBoolean(value) || Type.isNumber(value) || Type.isString(value);
+  },
+
+  isRegExp: function isRegExp(value) {
+    return value.constructor.name === "RegExp" || value instanceof RegExp;
+  },
+
+  isNumber: function isNumber(value) {
+    return (typeof value === "number" || value instanceof Number) && !isNaN(value);
+  },
+
+  isString: function isString(value) {
+    return typeof value === "string" || value instanceof String;
+  },
+
+  isBoolean: function isBoolean(value) {
+    return value !== null && (typeof value === "boolean" || value instanceof Boolean);
+  },
+
+  isArray: function isArray(value) {
+    return Array.isArray(value);
+  },
+
+  isObject: function isObject(value) {
+    return Object.prototype.toString.apply(value) === "[object Object]";
+  },
+
+  isFunction: function isFunction(value) {
+    return typeof value === "function";
+  },
+
+  isDefined: function isDefined(value) {
+    return typeof value !== "undefined";
+  },
+
+  isUndefined: function isUndefined(value) {
+    return typeof value === "undefined";
+  },
+
+  isWildcard: function isWildcard(value) {
+    return value && value.constructor === _fun.wildcard.constructor;
+  },
+
+  isVariable: function isVariable(value) {
+    return value && typeof value === "object" && typeof value.is_variable === "function" && typeof value.get_name === "function" && value.is_variable();
+  },
+
+  isParameter: function isParameter(value) {
+    return value && (value === _fun.parameter || value.constructor.name === _fun.parameter().constructor.name);
+  },
+
+  isStartsWith: function isStartsWith(value) {
+    return value && value.constructor.name === _fun.startsWith().constructor.name;
+  },
+
+  isCapture: function isCapture(value) {
+    return value && value.constructor.name === _fun.capture().constructor.name;
+  },
+
+  isHeadTail: function isHeadTail(value) {
+    return value.constructor === _fun.headTail.constructor;
+  },
+
+  isBound: function isBound(value) {
+    return value && value.constructor.name === _fun.bound().constructor.name;
+  }
+};
+
+var object = {
+  extend: function extend(obj) {
+    var i = 1,
+        key = undefined,
+        len = arguments.length;
+    for (; i < len; i += 1) {
+      for (key in arguments[i]) {
+        // make sure we do not override built-in methods but toString and valueOf
+        if (arguments[i].hasOwnProperty(key) && (!obj[key] || obj.propertyIsEnumerable(key) || key === "toString" || key === "valueOf")) {
+          obj[key] = arguments[i][key];
+        }
+      }
+    }
+    return obj;
+  },
+
+  filter: function filter(obj, fun, thisObj) {
+    var key = undefined,
+        r = {},
+        val = undefined;
+    thisObj = thisObj || obj;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        val = obj[key];
+        if (fun.call(thisObj, val, key, obj)) {
+          r[key] = val;
+        }
+      }
+    }
+    return r;
+  },
+
+  map: function map(obj, fun, thisObj) {
+    var key = undefined,
+        r = {};
+    thisObj = thisObj || obj;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        r[key] = fun.call(thisObj, obj[key], key, obj);
+      }
+    }
+    return r;
+  },
+
+  forEach: function forEach(obj, fun, thisObj) {
+    var key = undefined;
+    thisObj = thisObj || obj;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        fun.call(thisObj, obj[key], key, obj);
+      }
+    }
+  },
+
+  every: function every(obj, fun, thisObj) {
+    var key = undefined;
+    thisObj = thisObj || obj;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key) && !fun.call(thisObj, obj[key], key, obj)) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  some: function some(obj, fun, thisObj) {
+    var key = undefined;
+    thisObj = thisObj || obj;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key) && fun.call(thisObj, obj[key], key, obj)) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  isEmpty: function isEmpty(obj) {
+    return object.every(obj, function (value, key) {
+      return !obj.hasOwnProperty(key);
+    });
+  },
+
+  values: function values(obj) {
+    var r = [];
+    object.forEach(obj, function (value) {
+      r.push(value);
+    });
+    return r;
+  },
+
+  keys: function keys(obj) {
+    var r = [];
+    object.forEach(obj, function (value, key) {
+      r.push(key);
+    });
+    return r;
+  },
+
+  reduce: function reduce(obj, fun, initial) {
+    var key = undefined,
+        initialKey = undefined;
+
+    if (object.isEmpty(obj) && initial === undefined) {
+      throw new TypeError();
+    }
+    if (initial === undefined) {
+      for (key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          initial = obj[key];
+          initialKey = key;
+          break;
+        }
+      }
+    }
+    for (key in obj) {
+      if (obj.hasOwnProperty(key) && key !== initialKey) {
+        initial = fun.call(null, initial, obj[key], key, obj);
+      }
+    }
+    return initial;
+  }
+};
+
+function buildMatch(pattern) {
+  // A parameter can either be a function, or the result of invoking that
+  // function so we need to check for both.
+  if (Type.isUndefined(pattern) || Type.isWildcard(pattern)) {
+    return matchWildcard(pattern);
+  } else if (Type.isBound(pattern)) {
+    return matchBound(pattern);
+  } else if (Type.isParameter(pattern)) {
+    return matchParameter(pattern);
+  } else if (Type.isHeadTail(pattern)) {
+    return matchHeadTail(pattern);
+  } else if (Type.isStartsWith(pattern)) {
+    return matchStartsWith(pattern);
+  } else if (Type.isCapture(pattern)) {
+    return matchCapture(pattern);
+  } else if (Type.isAtom(pattern)) {
+    return matchAtom(pattern);
+  } else if (Type.isRegExp(pattern)) {
+    return matchRegExp(pattern);
+  } else if (Type.isObject(pattern)) {
+    return matchObject(pattern);
+  } else if (Type.isArray(pattern)) {
+    return matchArray(pattern);
+  } else if (Type.isFunction(pattern)) {
+    return matchFunction(pattern);
+  } else if (Type.isSymbol(pattern)) {
+    return matchSymbol(pattern);
+  }
+}
+
+function equals(one, two) {
+  if (typeof one !== typeof two) {
+    return false;
   }
 
-  _createClass(App, null, {
-    init: {
-      value: function init() {
-        var _this = this;
+  if (Type.isArray(one) || Type.isObject(one) || Type.isString(one)) {
+    if (one.length !== two.length) {
+      return false;
+    }
 
-        var socket = new Socket("/socket", {
-          logger: function (kind, msg, data) {
-            console.log("" + kind + ": " + msg, data);
-          }
-        });
-
-        socket.connect({ user_id: "123" });
-        var $status = $("#status");
-        var $messages = $("#messages");
-        var $input = $("#message-input");
-        var $username = $("#username");
-
-        socket.onOpen(function (ev) {
-          return console.log("OPEN", ev);
-        });
-        socket.onError(function (ev) {
-          return console.log("ERROR", ev);
-        });
-        socket.onClose(function (e) {
-          return console.log("CLOSE", e);
-        });
-
-        var chan = socket.channel("rooms:lobby", {});
-        chan.join().receive("ignore", function () {
-          return console.log("auth error");
-        }).receive("ok", function () {
-          return console.log("join ok");
-        }).after(10000, function () {
-          return console.log("Connection interruption");
-        });
-        chan.onError(function (e) {
-          return console.log("something went wrong", e);
-        });
-        chan.onClose(function (e) {
-          return console.log("channel closed", e);
-        });
-
-        $input.off("keypress").on("keypress", function (e) {
-          if (e.keyCode == 13) {
-            chan.push("new:msg", { user: $username.val(), body: $input.val() });
-            $input.val("");
-          }
-        });
-
-        chan.on("new:msg", function (msg) {
-          $messages.append(_this.messageTemplate(msg));
-          scrollTo(0, document.body.scrollHeight);
-        });
-
-        chan.on("user:entered", function (msg) {
-          var username = _this.sanitize(msg.user || "anonymous");
-          $messages.append("<br/><i>[" + username + " entered]</i>");
-        });
+    for (var i in one) {
+      if (!equals(one[i], two[i])) {
+        return false;
       }
-    },
-    sanitize: {
-      value: function sanitize(html) {
-        return $("<div/>").text(html).html();
-      }
-    },
-    messageTemplate: {
-      value: function messageTemplate(msg) {
-        var username = this.sanitize(msg.user || "anonymous");
-        var body = this.sanitize(msg.body);
+    }
 
-        return "<p><a href='#'>[" + username + "]</a>&nbsp; " + body + "</p>";
+    return true;
+  }
+
+  return one === two;
+}
+
+function matchBound(pattern) {
+  return function (value, bindings) {
+    return equals(value, pattern.value) && bindings.push(value) > 0;
+  };
+}
+
+function matchParameter(pattern) {
+  return function (value, bindings) {
+    return bindings.push(value) > 0;
+  };
+}
+
+function matchWildcard(pattern) {
+  return function () {
+    return true;
+  };
+}
+
+function matchHeadTail(patternHeadTail) {
+  return function (value, bindings) {
+    return value.length > 1 && bindings.push(value[0]) > 0 && bindings.push(value.slice(1)) > 0;
+  };
+}
+
+function matchCapture(patternCapture) {
+  var pattern = patternCapture.pattern;
+  var subMatches = buildMatch(pattern);
+
+  return function (value, bindings) {
+    return subMatches(value, bindings) && bindings.push(value) > 0;
+  };
+}
+
+function matchStartsWith(patternStartsWith) {
+  var substr = patternStartsWith.substr;
+
+  if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+      position = position || 0;
+      return this.indexOf(searchString, position) === position;
+    };
+  }
+
+  return function (value, bindings) {
+    return Type.isString(substr) && value.startsWith(substr) && value.substring(substr.length) !== "" && bindings.push(value.substring(substr.length)) > 0;
+  };
+}
+
+function matchSymbol(patternSymbol) {
+  var type = typeof patternSymbol,
+      value = patternSymbol;
+
+  return function (valueSymbol, bindings) {
+    return typeof valueSymbol === type && valueSymbol === value;
+  };
+}
+
+function matchAtom(patternAtom) {
+  var type = typeof patternAtom,
+      value = patternAtom;
+
+  return function (valueAtom, bindings) {
+    return typeof valueAtom === type && valueAtom === value || typeof value === "number" && isNaN(valueAtom) && isNaN(value);
+  };
+}
+
+function matchRegExp(patternRegExp) {
+  return function (value, bindings) {
+    return !(typeof value === undefined) && typeof value === "string" && patternRegExp.test(value);
+  };
+}
+
+function matchFunction(patternFunction) {
+  return function (value, bindings) {
+    return value.constructor === patternFunction && bindings.push(value) > 0;
+  };
+}
+
+function matchArray(patternArray) {
+  var patternLength = patternArray.length,
+      subMatches = patternArray.map(function (value) {
+    return buildMatch(value);
+  });
+
+  return function (valueArray, bindings) {
+    return patternLength === valueArray.length && valueArray.every(function (value, i) {
+      return i in subMatches && subMatches[i](valueArray[i], bindings);
+    });
+  };
+}
+
+function matchObject(patternObject) {
+  var type = patternObject.constructor,
+      patternLength = 0,
+
+  // Figure out the number of properties in the object
+  // and the keys we need to check for. We put these
+  // in another object so access is very fast. The build_match
+  // function creates new subtests which we execute later.
+  subMatches = object.map(patternObject, function (value) {
+    patternLength += 1;
+    return buildMatch(value);
+  });
+
+  // We then return a function which uses that information
+  // to check against the object passed to it.
+  return function (valueObject, bindings) {
+    if (valueObject.constructor !== type) {
+      return false;
+    }
+
+    var newValueObject = {};
+
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = Object.keys(patternObject)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var key = _step.value;
+
+        if (key in valueObject) {
+          newValueObject[key] = valueObject[key];
+        } else {
+          return false;
+        }
       }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"]) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    // Checking the object type is very fast so we do it first.
+    // Then we iterate through the value object and check the keys
+    // it contains against the hash object we built earlier.
+    // We also count the number of keys in the value object,
+    // so we can also test against it as a final check.
+    return object.every(newValueObject, function (value, key) {
+      return key in subMatches && subMatches[key](newValueObject[key], bindings);
+    });
+  };
+}
+
+var Match = {
+  buildMatch: buildMatch
+};
+
+/**
+ * @preserve jFun - JavaScript Pattern Matching v0.12
+ *
+ * Licensed under the new BSD License.
+ * Copyright 2008, Bram Stein
+ * All rights reserved.
+ */
+var _fun = function _fun() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  var patterns = args.slice(0).map(function (value, i) {
+    var pattern = {
+      pattern: Match.buildMatch(value[0]),
+      fn: value[1],
+      guard: value.length === 3 ? value[2] : function () {
+        return true;
+      }
+    };
+
+    return pattern;
+  });
+
+  return function () {
+    for (var _len2 = arguments.length, inner_args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      inner_args[_key2] = arguments[_key2];
+    }
+
+    var value = inner_args.slice(0),
+        result = [];
+
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = patterns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var pattern = _step.value;
+
+        if (pattern.pattern(value, result) && pattern.guard.apply(this, result)) {
+          return pattern.fn.apply(this, result);
+        }
+
+        result = [];
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"]) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    // no matches were made so we throw an exception.
+    throw new MatchError("No match for: " + value);
+  };
+};
+
+_fun.bind = function (pattern, expr) {
+  var result = [];
+  var processedPattern = Match.buildMatch(pattern);
+  if (processedPattern(expr, result)) {
+    return result;
+  } else {
+    throw new MatchError("No match for: " + expr);
+  }
+};
+
+_fun.parameter = function (name, orElse) {
+  function Parameter(n, o) {
+    this.name = n;
+    this.orElse = o;
+  }
+  return new Parameter(name, orElse);
+};
+
+_fun.capture = function (pattern) {
+  function Capture(p) {
+    this.pattern = p;
+  }
+  return new Capture(pattern);
+};
+
+_fun.startsWith = function (substr) {
+  function StartsWith(s) {
+    this.substr = s;
+  }
+
+  return new StartsWith(substr);
+};
+
+_fun.wildcard = (function () {
+  function Wildcard() {}
+  return new Wildcard();
+})();
+
+_fun.headTail = (function () {
+  function HeadTail() {}
+  return new HeadTail();
+})();
+
+_fun.bound = function (value) {
+  function Bound(v) {
+    this.value = v;
+  }
+
+  return new Bound(value);
+};
+
+var BitString = {};
+
+BitString.__MODULE__ = Symbol["for"]("BitString");
+
+BitString.integer = function (value) {
+  return BitString.wrap(value, { type: "integer", unit: 1, size: 8 });
+};
+
+BitString.float = function (value) {
+  return BitString.wrap(value, { type: "float", unit: 1, size: 64 });
+};
+
+BitString.bitstring = function (value) {
+  return BitString.wrap(value, { type: "bitstring", unit: 1, size: value.length });
+};
+
+BitString.bits = function (value) {
+  return BitString.bitstring(value);
+};
+
+BitString.binary = function (value) {
+  return BitString.wrap(value, { type: "binary", unit: 8, size: value.length });
+};
+
+BitString.bytes = function (value) {
+  return BitString.binary(value);
+};
+
+BitString.utf8 = function (value) {
+  return BitString.wrap(value, { type: "utf8" });
+};
+
+BitString.utf16 = function (value) {
+  return BitString.wrap(value, { type: "utf16" });
+};
+
+BitString.utf32 = function (value) {
+  return BitString.wrap(value, { type: "utf32" });
+};
+
+BitString.signed = function (value) {
+  return BitString.wrap(value, {}, "signed");
+};
+
+BitString.unsigned = function (value) {
+  return BitString.wrap(value, {}, "unsigned");
+};
+
+BitString.native = function (value) {
+  return BitString.wrap(value, {}, "native");
+};
+
+BitString.big = function (value) {
+  return BitString.wrap(value, {}, "big");
+};
+
+BitString.little = function (value) {
+  return BitString.wrap(value, {}, "little");
+};
+
+BitString.size = function (value, count) {
+  return BitString.wrap(value, { size: count });
+};
+
+BitString.unit = function (value, count) {
+  return BitString.wrap(value, { unit: count });
+};
+
+BitString.wrap = function (value, opt) {
+  var new_attribute = arguments[2] === undefined ? null : arguments[2];
+
+  var the_value = value;
+
+  if (!(value instanceof Object)) {
+    the_value = { value: value, attributes: [] };
+  }
+
+  the_value = Object.assign(the_value, opt);
+
+  if (new_attribute) {
+    the_value.attributes.push(new_attribute);
+  }
+
+  return the_value;
+};
+
+BitString.toUTF8Array = function (str) {
+  var utf8 = [];
+  for (var i = 0; i < str.length; i++) {
+    var charcode = str.charCodeAt(i);
+    if (charcode < 128) {
+      utf8.push(charcode);
+    } else if (charcode < 2048) {
+      utf8.push(192 | charcode >> 6, 128 | charcode & 63);
+    } else if (charcode < 55296 || charcode >= 57344) {
+      utf8.push(224 | charcode >> 12, 128 | charcode >> 6 & 63, 128 | charcode & 63);
+    }
+    // surrogate pair
+    else {
+      i++;
+      // UTF-16 encodes 0x10000-0x10FFFF by
+      // subtracting 0x10000 and splitting the
+      // 20 bits of 0x0-0xFFFFF into two halves
+      charcode = 65536 + ((charcode & 1023) << 10 | str.charCodeAt(i) & 1023);
+      utf8.push(240 | charcode >> 18, 128 | charcode >> 12 & 63, 128 | charcode >> 6 & 63, 128 | charcode & 63);
+    }
+  }
+  return utf8;
+};
+
+BitString.toUTF16Array = function (str) {
+  var utf16 = [];
+  for (var i = 0; i < str.length; i++) {
+    var codePoint = str.codePointAt(i);
+
+    if (codePoint <= 255) {
+      utf16.push(0);
+      utf16.push(codePoint);
+    } else {
+      utf16.push(codePoint >> 8 & 255);
+      utf16.push(codePoint & 255);
+    }
+  }
+  return utf16;
+};
+
+BitString.toUTF32Array = function (str) {
+  var utf32 = [];
+  for (var i = 0; i < str.length; i++) {
+    var codePoint = str.codePointAt(i);
+
+    if (codePoint <= 255) {
+      utf32.push(0);
+      utf32.push(0);
+      utf32.push(0);
+      utf32.push(codePoint);
+    } else {
+      utf32.push(0);
+      utf32.push(0);
+      utf32.push(codePoint >> 8 & 255);
+      utf32.push(codePoint & 255);
+    }
+  }
+  return utf32;
+};
+
+//http://stackoverflow.com/questions/2003493/javascript-float-from-to-bits
+BitString.float32ToBytes = function (f) {
+  var bytes = [];
+
+  var buf = new ArrayBuffer(4);
+  new Float32Array(buf)[0] = f;
+
+  var intVersion = new Uint32Array(buf)[0];
+
+  bytes.push(intVersion >> 24 & 255);
+  bytes.push(intVersion >> 16 & 255);
+  bytes.push(intVersion >> 8 & 255);
+  bytes.push(intVersion & 255);
+
+  return bytes;
+};
+
+BitString.float64ToBytes = function (f) {
+  var bytes = [];
+
+  var buf = new ArrayBuffer(8);
+  new Float64Array(buf)[0] = f;
+
+  var intVersion1 = new Uint32Array(buf)[0];
+  var intVersion2 = new Uint32Array(buf)[1];
+
+  bytes.push(intVersion2 >> 24 & 255);
+  bytes.push(intVersion2 >> 16 & 255);
+  bytes.push(intVersion2 >> 8 & 255);
+  bytes.push(intVersion2 & 255);
+
+  bytes.push(intVersion1 >> 24 & 255);
+  bytes.push(intVersion1 >> 16 & 255);
+  bytes.push(intVersion1 >> 8 & 255);
+  bytes.push(intVersion1 & 255);
+
+  return bytes;
+};
+
+function atom(_value) {
+  return Symbol["for"](_value);
+}
+
+function list() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  return Object.freeze(args);
+}
+
+function tuple() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  return Object.freeze({ __tuple__: Object.freeze(args) });
+}
+
+function bitstring() {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
+
+  if (!(this instanceof bitstring)) {
+    return _applyConstructor(bitstring, args);
+  }
+
+  this.raw_value = function () {
+    return Object.freeze(args);
+  };
+
+  var _value = Object.freeze(this.process(args));
+
+  this.value = function () {
+    return _value;
+  };
+
+  this.length = _value.length;
+
+  this.get = function (i) {
+    return _value[i];
+  };
+
+  return this;
+}
+
+bitstring.prototype[Symbol.iterator] = function () {
+  return this.value()[Symbol.iterator]();
+};
+
+bitstring.prototype.toString = function () {
+  var i,
+      s = "";
+  for (i = 0; i < this.length; i++) {
+    if (s !== "") {
+      s += ", ";
+    }
+    s += this.get(i).toString();
+  }
+
+  return "<<" + s + ">>";
+};
+
+bitstring.prototype.process = function () {
+  var processed_values = [];
+
+  var i;
+  for (i = 0; i < this.raw_value().length; i++) {
+    var processed_value = this["process_" + this.raw_value()[i].type](this.raw_value()[i]);
+
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = this.raw_value()[i].attributes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var attr = _step.value;
+
+        processed_value = this["process_" + attr](processed_value);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"]) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    processed_values = processed_values.concat(processed_value);
+  }
+
+  return processed_values;
+};
+
+bitstring.prototype.process_integer = function (value) {
+  return value.value;
+};
+
+bitstring.prototype.process_float = function (value) {
+  if (value.size === 64) {
+    return BitString.float64ToBytes(value.value);
+  } else if (value.size === 32) {
+    return BitString.float32ToBytes(value.value);
+  }
+
+  throw new Error("Invalid size for float");
+};
+
+bitstring.prototype.process_bitstring = function (value) {
+  return value.value.value;
+};
+
+bitstring.prototype.process_binary = function (value) {
+  return BitString.toUTF8Array(value.value);
+};
+
+bitstring.prototype.process_utf8 = function (value) {
+  return BitString.toUTF8Array(value.value);
+};
+
+bitstring.prototype.process_utf16 = function (value) {
+  return BitString.toUTF16Array(value.value);
+};
+
+bitstring.prototype.process_utf32 = function (value) {
+  return BitString.toUTF32Array(value.value);
+};
+
+bitstring.prototype.process_signed = function (value) {
+  return new Uint8Array([value])[0];
+};
+
+bitstring.prototype.process_unsigned = function (value) {
+  return value;
+};
+
+bitstring.prototype.process_native = function (value) {
+  return value;
+};
+
+bitstring.prototype.process_big = function (value) {
+  return value;
+};
+
+bitstring.prototype.process_little = function (value) {
+  return value.reverse();
+};
+
+bitstring.prototype.process_size = function (value) {
+  return value;
+};
+
+bitstring.prototype.process_unit = function (value) {
+  return value;
+};
+
+var Erlang = {
+  atom: atom,
+  tuple: tuple,
+  list: list,
+  bitstring: bitstring
+};
+
+var Fetch = {};
+
+Fetch.__MODULE__ = Erlang.atom("Fetch");
+
+function make_request(url, method, options) {
+  options.method = method;
+  return fetch(url, options);
+}
+
+Fetch["delete"] = function (url) {
+  var options = arguments[1] === undefined ? {} : arguments[1];
+
+  return make_request(url, "DELETE", options);
+};
+
+Fetch.get = function (url) {
+  var options = arguments[1] === undefined ? {} : arguments[1];
+
+  return make_request(url, "GET", options);
+};
+
+Fetch.head = function (url) {
+  var options = arguments[1] === undefined ? {} : arguments[1];
+
+  return make_request(url, "HEAD", options);
+};
+
+Fetch.options = function (url) {
+  var options = arguments[1] === undefined ? {} : arguments[1];
+
+  return make_request(url, "OPTIONS", options);
+};
+
+Fetch.post = function (url) {
+  var options = arguments[1] === undefined ? {} : arguments[1];
+
+  return make_request(url, "POST", options);
+};
+
+Fetch.put = function (url) {
+  var options = arguments[1] === undefined ? {} : arguments[1];
+
+  return make_request(url, "PUT", options);
+};
+
+var Tuple = {};
+
+Tuple.__MODULE__ = Erlang.atom("Tuple");
+
+Tuple.to_string = function (tuple) {
+  var i,
+      s = "";
+  for (i = 0; i < tuple.__tuple__.length; i++) {
+    if (s !== "") {
+      s += ", ";
+    }
+    s += tuple.__tuple__[i].toString();
+  }
+
+  return "{" + s + "}";
+};
+
+Tuple.delete_at = function (tuple, index) {
+  var new_list = [];
+
+  for (var i = 0; i < tuple.__tuple__.length; i++) {
+    if (i !== index) {
+      new_list.push(tuple.__tuple__[i]);
+    }
+  }
+
+  return Erlang.tuple.apply(null, new_list);
+};
+
+Tuple.duplicate = function (data, size) {
+  var array = [];
+
+  for (var i = size - 1; i >= 0; i--) {
+    array.push(data);
+  }
+
+  return Erlang.tuple.apply(null, array);
+};
+
+Tuple.insert_at = function (tuple, index, term) {
+  var new_tuple = [];
+
+  for (var i = 0; i <= tuple.__tuple__.length; i++) {
+    if (i === index) {
+      new_tuple.push(term);
+      i++;
+      new_tuple.push(tuple.__tuple__[i]);
+    } else {
+      new_tuple.push(tuple.__tuple__[i]);
+    }
+  }
+
+  return Erlang.tuple.apply(null, new_tuple);
+};
+
+Tuple.from_list = function (list) {
+  return Erlang.tuple.apply(null, list);
+};
+
+Tuple.to_list = function (tuple) {
+  var new_list = [];
+
+  for (var i = 0; i < tuple.__tuple__.length; i++) {
+    new_list.push(tuple.__tuple__[i]);
+  }
+
+  return Erlang.list.apply(Erlang, new_list);
+};
+
+Tuple.iterator = function (tuple) {
+  return tuple.__tuple__[Symbol.iterator]();
+};
+
+var SpecialForms = {
+  __MODULE__: Erlang.atom("SpecialForms"),
+
+  __DIR__: function __DIR__() {
+    if (__dirname) {
+      return __dirname;
+    }
+
+    if (document.currentScript) {
+      return document.currentScript.src;
+    }
+
+    return null;
+  },
+
+  receive: function receive(receive_fun) {
+    var timeout_in_ms = arguments[1] === undefined ? null : arguments[1];
+    var timeout_fn = arguments[2] === undefined ? function (time) {
+      return true;
+    } : arguments[2];
+
+    if (timeout_in_ms == null || timeout_in_ms === System["for"]("infinity")) {
+      while (true) {
+        if (self.mailbox.length !== 0) {
+          var message = self.mailbox[0];
+          self.mailbox = self.mailbox.slice(1);
+          return receive_fun(message);
+        }
+      }
+    } else if (timeout_in_ms === 0) {
+      if (self.mailbox.length !== 0) {
+        var message = self.mailbox[0];
+        self.mailbox = self.mailbox.slice(1);
+        return receive_fun(message);
+      } else {
+        return null;
+      }
+    } else {
+      var now = Date.now();
+      while (Date.now() < now + timeout_in_ms) {
+        if (self.mailbox.length !== 0) {
+          var message = self.mailbox[0];
+          self.mailbox = self.mailbox.slice(1);
+          return receive_fun(message);
+        }
+      }
+
+      return timeout_fn(timeout_in_ms);
+    }
+  }
+};
+
+var Kernel = {
+  __MODULE__: Erlang.atom("Kernel"),
+
+  SpecialForms: SpecialForms,
+
+  tl: function tl(list) {
+    return Erlang.list.apply(Erlang, _toConsumableArray(list.slice(1)));
+  },
+
+  hd: function hd(list) {
+    return list[0];
+  },
+
+  is_nil: function is_nil(x) {
+    return x == null;
+  },
+
+  is_atom: function is_atom(x) {
+    return typeof x === "symbol";
+  },
+
+  is_binary: function is_binary(x) {
+    return typeof x === "string" || x instanceof String;
+  },
+
+  is_boolean: function is_boolean(x) {
+    return typeof x === "boolean" || x instanceof Boolean;
+  },
+
+  is_function: function is_function(x) {
+    var arity = arguments[1] === undefined ? -1 : arguments[1];
+
+    return typeof x === "function" || x instanceof Function;
+  },
+
+  // from: http://stackoverflow.com/a/3885844
+  is_float: function is_float(x) {
+    return x === +x && x !== (x | 0);
+  },
+
+  is_integer: function is_integer(x) {
+    return x === +x && x === (x | 0);
+  },
+
+  is_list: function is_list(x) {
+    return x instanceof Array;
+  },
+
+  is_map: function is_map(x) {
+    return typeof x === "object" || x instanceof Object && x.__tuple__ === null;
+  },
+
+  is_number: function is_number(x) {
+    return Kernel.is_integer(x) || Kernel.is_float(x);
+  },
+
+  is_tuple: function is_tuple(x) {
+    return (typeof x === "object" || x instanceof Object) && x.__tuple__ !== null;
+  },
+
+  length: function length(x) {
+    return x.length;
+  },
+
+  is_pid: function is_pid(x) {
+    return false;
+  },
+
+  is_port: function is_port(x) {},
+
+  is_reference: function is_reference(x) {},
+
+  is_bitstring: function is_bitstring(x) {
+    return Kernel.is_binary(x) || x instanceof Erlang.bitstring;
+  },
+
+  __in__: function __in__(left, right) {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = right[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var _x = _step.value;
+
+        if (Kernel.match__qmark__(left, _x)) {
+          return true;
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"]) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return false;
+  },
+
+  abs: function abs(number) {
+    return Math.abs(number);
+  },
+
+  round: function round(number) {
+    return Math.round(number);
+  },
+
+  elem: function elem(tuple, index) {
+    if (Kernel.is_list(tuple)) {
+      return tuple[index];
+    }
+
+    return tuple.__tuple__[index];
+  },
+
+  rem: function rem(left, right) {
+    return left % right;
+  },
+
+  div: function div(left, right) {
+    return left / right;
+  },
+
+  and: function and(left, right) {
+    return left && right;
+  },
+
+  or: function or(left, right) {
+    return left || right;
+  },
+
+  not: function not(arg) {
+    return !arg;
+  },
+
+  apply: function apply(module, func, args) {
+    if (arguments.length === 3) {
+      return module[func].apply(null, args);
+    } else {
+      return module.apply(null, func);
+    }
+  },
+
+  to_string: function to_string(arg) {
+    if (Kernel.is_tuple(arg)) {
+      return Tuple.to_string(arg);
+    }
+
+    return arg.toString();
+  },
+
+  "throw": function _throw(e) {
+    throw e;
+  },
+
+  match__qmark__: function match__qmark__(pattern, expr) {
+    var guard = arguments[2] === undefined ? function () {
+      return true;
+    } : arguments[2];
+
+    try {
+      var match = _fun([[pattern], function () {
+        return true;
+      }, guard]);
+
+      return match(expr);
+    } catch (e) {
+      return false;
+    }
+  }
+};
+
+var Atom = {};
+
+Atom.__MODULE__ = Erlang.atom("Atom");
+
+Atom.to_string = function (atom) {
+  return Symbol.keyFor(atom);
+};
+
+Atom.to_char_list = function (atom) {
+  return Atom.to_string(atom).split("");
+};
+
+var Enum = {
+  __MODULE__: Erlang.atom("Enum"),
+
+  all__qmark__: function all__qmark__(collection) {
+    var fun = arguments[1] === undefined ? function (x) {
+      return x;
+    } : arguments[1];
+
+    var result = Enum.filter(collection, function (x) {
+      return !fun(x);
+    });
+
+    return result === [];
+  },
+
+  any__qmark__: function any__qmark__(collection) {
+    var fun = arguments[1] === undefined ? function (x) {
+      return x;
+    } : arguments[1];
+
+    var result = Enum.filter(collection, function (x) {
+      return fun(x);
+    });
+
+    return result !== [];
+  },
+
+  at: function at(collection, n) {
+    var the_default = arguments[2] === undefined ? null : arguments[2];
+
+    for (var i = 0; i < collection.length; i++) {
+      if (i === n) {
+        return collection[i];
+      }
+    }
+
+    return the_default;
+  },
+
+  concat: function concat() {
+    for (var _len = arguments.length, enumables = Array(_len), _key = 0; _key < _len; _key++) {
+      enumables[_key] = arguments[_key];
+    }
+
+    return enumables[0].concat(enumables.slice(1));
+  },
+
+  count: function count(collection) {
+    var fun = arguments[1] === undefined ? null : arguments[1];
+
+    if (fun == null) {
+      return Kernel.length(collection);
+    } else {
+      return Kernel.length(collection.filter(fun));
+    }
+  },
+
+  each: function each(collection, fun) {
+    [].forEach.call(collection, fun);
+  },
+
+  empty__qmark__: function empty__qmark__(collection) {
+    return Kernel.length(collection) === 0;
+  },
+
+  fetch: function fetch(collection, n) {
+    if (Kernel.is_list(collection)) {
+      if (n < collection.length && n >= 0) {
+        return Erlang.tuple(Erlang.atom("ok"), collection[n]);
+      } else {
+        return Erlang.atom("error");
+      }
+    }
+
+    throw new Error("collection is not an Enumerable");
+  },
+
+  fetch__emark__: function fetch__emark__(collection, n) {
+    if (Kernel.is_list(collection)) {
+      if (n < collection.length && n >= 0) {
+        return collection[n];
+      } else {
+        throw new Error("out of bounds error");
+      }
+    }
+
+    throw new Error("collection is not an Enumerable");
+  },
+
+  filter: function filter(collection, fun) {
+    return [].filter.call(collection, fun);
+  },
+
+  map: function map(collection, fun) {
+    return [].map.call(collection, fun);
+  },
+
+  map_reduce: function map_reduce(collection, acc, fun) {
+    var mapped = Erlang.list();
+    var the_acc = acc;
+
+    for (var i = 0; i < collection.length; i++) {
+      var _tuple = fun(collection[i], the_acc);
+
+      the_acc = Kernel.elem(_tuple, 1);
+      mapped = Erlang.list.apply(Erlang, _toConsumableArray(mapped.concat([Kernel.elem(_tuple, 0)])));
+    }
+
+    return Erlang.tuple(mapped, the_acc);
+  },
+
+  member: function member(collection, value) {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = collection[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var _x = _step.value;
+
+        if (_x === value) {
+          return true;
+        }
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"]) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    return false;
+  },
+
+  reduce: function reduce(collection, acc, fun) {
+    var the_acc = acc;
+
+    for (var i = 0; i < collection.length; i++) {
+      the_acc = fun(collection[i], the_acc);
+    }
+
+    return the_acc;
+  }
+};
+
+var Integer = {
+  __MODULE__: Erlang.atom("Integer"),
+
+  is_even: function is_even(n) {
+    return n % 2 === 0;
+  },
+
+  is_odd: function is_odd(n) {
+    return n % 2 !== 0;
+  },
+
+  parse: function parse(bin) {
+    var result = parseInt(bin);
+
+    if (isNaN(result)) {
+      return Erlang.atom("error");
+    }
+
+    var indexOfDot = bin.indexOf(".");
+
+    if (indexOfDot >= 0) {
+      return Erlang.tuple(result, bin.substring(indexOfDot));
+    }
+
+    return Erlang.tuple(result, "");
+  },
+
+  to_char_list: function to_char_list(number) {
+    var base = arguments[1] === undefined ? 10 : arguments[1];
+
+    return number.toString(base).split("");
+  },
+
+  to_string: function to_string(number) {
+    var base = arguments[1] === undefined ? 10 : arguments[1];
+
+    return number.toString(base);
+  }
+};
+
+var JS = {
+  __MODULE__: Erlang.atom("JS"),
+
+  get_property_or_call_function: function get_property_or_call_function(item, property) {
+    if (item[property] instanceof Function) {
+      return item[property]();
+    } else {
+      return item[property];
+    }
+  }
+};
+
+var List = {};
+
+List.__MODULE__ = Erlang.atom("List");
+
+List["delete"] = function (list, item) {
+  var new_value = [];
+  var value_found = false;
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _x = _step.value;
+
+      if (_x === item && value_found !== false) {
+        new_value.push(_x);
+        value_found = true;
+      } else if (_x !== item) {
+        new_value.push(_x);
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator["return"]) {
+        _iterator["return"]();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return Erlang.list.apply(Erlang, new_value);
+};
+
+List.delete_at = function (list, index) {
+  var new_value = [];
+
+  for (var i = 0; i < list.length; i++) {
+    if (i !== index) {
+      new_value.push(list[i]);
+    }
+  }
+
+  return Erlang.list.apply(Erlang, new_value);
+};
+
+List.duplicate = function (elem, n) {
+  var new_value = [];
+
+  for (var i = 0; i < n; i++) {
+    new_value.push(elem);
+  }
+
+  return Erlang.list.apply(Erlang, new_value);
+};
+
+List.first = function (list) {
+  if (list.length === 0) {
+    return null;
+  }
+
+  return list[0];
+};
+
+List.flatten = function (list) {
+  var tail = arguments[1] === undefined ? Erlang.list() : arguments[1];
+
+  var new_value = [];
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _x2 = _step.value;
+
+      if (Kernel.is_list(_x2)) {
+        new_value = new_value.concat(List.flatten(_x2));
+      } else {
+        new_value.push(_x2);
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator["return"]) {
+        _iterator["return"]();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  new_value = new_value.concat(tail);
+
+  return Erlang.list.apply(Erlang, _toConsumableArray(new_value));
+};
+
+List.foldl = function (list, acc, func) {
+  var new_acc = acc;
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _x = _step.value;
+
+      new_acc = func(_x, new_acc);
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator["return"]) {
+        _iterator["return"]();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return new_acc;
+};
+
+List.foldr = function (list, acc, func) {
+  var new_acc = acc;
+
+  for (var i = list.length - 1; i >= 0; i--) {
+    new_acc = func(list[i], new_acc);
+  }
+
+  return new_acc;
+};
+
+List.insert_at = function (list, index, value) {
+  var new_value = [];
+
+  for (var i = 0; i < list.length; i++) {
+    if (i === index) {
+      new_value.push(value);
+      new_value.push(list[i]);
+    } else {
+      new_value.push(list[i]);
+    }
+  }
+
+  return Erlang.list.apply(Erlang, new_value);
+};
+
+List.keydelete = function (list, key, position) {
+  var new_list = [];
+
+  for (var i = 0; i < list.length; i++) {
+    if (!Kernel.match__qmark__(list[i][position], key)) {
+      new_list.push(list[i]);
+    }
+  }
+
+  return Erlang.list.apply(Erlang, new_list);
+};
+
+List.keyfind = function (list, key, position) {
+  var _default = arguments[3] === undefined ? null : arguments[3];
+
+  for (var i = 0; i < list.length; i++) {
+    if (Kernel.match__qmark__(list[i][position], key)) {
+      return list[i];
+    }
+  }
+
+  return _default;
+};
+
+List.keymember__qmark__ = function (list, key, position) {
+
+  for (var i = 0; i < list.length; i++) {
+    if (Kernel.match__qmark__(list[i][position], key)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+List.keyreplace = function (list, key, position, new_tuple) {
+  var new_list = [];
+
+  for (var i = 0; i < list.length; i++) {
+    if (!Kernel.match__qmark__(list[i][position], key)) {
+      new_list.push(list[i]);
+    } else {
+      new_list.push(new_tuple);
+    }
+  }
+
+  return Erlang.list.apply(Erlang, new_list);
+};
+
+List.keysort = function (list, position) {
+  var new_list = list;
+
+  new_list.sort(function (a, b) {
+    if (position === 0) {
+      if (a[position].value < b[position].value) {
+        return -1;
+      }
+
+      if (a[position].value > b[position].value) {
+        return 1;
+      }
+
+      return 0;
+    } else {
+      if (a[position] < b[position]) {
+        return -1;
+      }
+
+      if (a[position] > b[position]) {
+        return 1;
+      }
+
+      return 0;
     }
   });
 
-  return App;
-})();
+  return Erlang.list.apply(Erlang, _toConsumableArray(new_list));
+};
 
-$(function () {
-  return App.init();
+List.keystore = function (list, key, position, new_tuple) {
+  var new_list = [];
+  var replaced = false;
+
+  for (var i = 0; i < list.length; i++) {
+    if (!Kernel.match__qmark__(list[i][position], key)) {
+      new_list.push(list[i]);
+    } else {
+      new_list.push(new_tuple);
+      replaced = true;
+    }
+  }
+
+  if (!replaced) {
+    new_list.push(new_tuple);
+  }
+
+  return Erlang.list.apply(Erlang, new_list);
+};
+
+List.last = function (list) {
+  if (list.length === 0) {
+    return null;
+  }
+
+  return list[list.length - 1];
+};
+
+List.replace_at = function (list, index, value) {
+  var new_value = [];
+
+  for (var i = 0; i < list.length; i++) {
+    if (i === index) {
+      new_value.push(value);
+    } else {
+      new_value.push(list[i]);
+    }
+  }
+
+  return Erlang.list.apply(Erlang, new_value);
+};
+
+List.update_at = function (list, index, fun) {
+  var new_value = [];
+
+  for (var i = 0; i < list.length; i++) {
+    if (i === index) {
+      new_value.push(fun(list[i]));
+    } else {
+      new_value.push(list[i]);
+    }
+  }
+
+  return new_value;
+};
+
+List.wrap = function (list) {
+  if (Kernel.is_list(list)) {
+    return list;
+  } else if (list == null) {
+    return Erlang.list();
+  } else {
+    return Erlang.list(list);
+  }
+};
+
+List.zip = function (list_of_lists) {
+  if (list_of_lists.length === 0) {
+    return Erlang.list();
+  }
+
+  var new_value = [];
+  var smallest_length = list_of_lists[0];
+
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = list_of_lists[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _x = _step.value;
+
+      if (_x.length < smallest_length) {
+        smallest_length = _x.length;
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator["return"]) {
+        _iterator["return"]();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  for (var i = 0; i < smallest_length; i++) {
+    var current_value = [];
+    for (var j = 0; j < list_of_lists.length; j++) {
+      current_value.push(list_of_lists[j][i]);
+    }
+
+    new_value.push(Erlang.tuple.apply(Erlang, current_value));
+  }
+
+  return Erlang.list.apply(Erlang, new_value);
+};
+
+List.to_tuple = function (list) {
+  return Erlang.tuple.apply(null, list);
+};
+
+List.append = function (list, value) {
+  return Erlang.list.apply(Erlang, _toConsumableArray(list.concat([value])));
+};
+
+List.concat = function (left, right) {
+  return Erlang.list.apply(Erlang, _toConsumableArray(left.concat(right)));
+};
+
+var Range = (function (_Range) {
+  var _RangeWrapper = function Range(_x, _x2) {
+    return _Range.apply(this, arguments);
+  };
+
+  _RangeWrapper.toString = function () {
+    return _Range.toString();
+  };
+
+  return _RangeWrapper;
+})(function (_first, _last) {
+  if (!(this instanceof Range)) {
+    return new Range(_first, _last);
+  }
+
+  this.first = function () {
+    return _first;
+  };
+
+  this.last = function () {
+    return _last;
+  };
+
+  var _range = [];
+
+  for (var i = _first; i <= _last; i++) {
+    _range.push(i);
+  }
+
+  _range = Object.freeze(_range);
+
+  this.value = function () {
+    return _range;
+  };
+
+  this.length = function () {
+    return _range.length;
+  };
+
+  return this;
 });
 
-module.exports = App;});
+Range.__MODULE__ = Erlang.atom("Range");
 
-;
+Range.prototype[Symbol.iterator] = function () {
+  return this.value()[Symbol.iterator]();
+};
+
+Range["new"] = function (first, last) {
+  return Range(first, last);
+};
+
+Range.range__qmark__ = function (range) {
+  return range instanceof Range;
+};
+
+var Keyword = {};
+
+Keyword.__MODULE__ = Erlang.atom("Keyword");
+
+Keyword.has_key__qm__ = function (keywords, key) {
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = keywords[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var keyword = _step.value;
+
+      if (Kernel.elem(keyword, 0) == key) {
+        return true;
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator["return"]) {
+        _iterator["return"]();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return false;
+};
+
+Keyword.get = function (keywords, key) {
+  var the_default = arguments[2] === undefined ? null : arguments[2];
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = keywords[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var keyword = _step.value;
+
+      if (Kernel.elem(keyword, 0) == key) {
+        return Kernel.elem(keyword, 1);
+      }
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator["return"]) {
+        _iterator["return"]();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  return the_default;
+};
+
+var Agent = {};
+
+Agent.__MODULE__ = Erlang.atom("Agent");
+
+Agent.start = function (fun) {
+  var options = arguments[1] === undefined ? [] : arguments[1];
+
+  var name = Keyword.has_key__qm__(options, Erlang.atom("name")) ? Keyword.get(options, Erlang.atom("name")) : Symbol();
+  self.mailbox[name] = fun();
+  return Erlang.tuple(Erlang.atom("ok"), name);
+};
+
+Agent.stop = function (agent) {
+  var timeout = arguments[1] === undefined ? 5000 : arguments[1];
+
+  delete self.mailbox[agent];
+  return Erlang.atom("ok");
+};
+
+Agent.update = function (agent, fun) {
+  var timeout = arguments[2] === undefined ? 5000 : arguments[2];
+
+  var new_state = fun(self.mailbox[agent]);
+  self.mailbox[agent] = new_state;
+  return Erlang.atom("ok");
+};
+
+Agent.get = function (agent, fun) {
+  var timeout = arguments[2] === undefined ? 5000 : arguments[2];
+
+  return fun(self.mailbox[agent]);
+};
+
+Agent.get_and_update = function (agent, fun) {
+  var timeout = arguments[2] === undefined ? 5000 : arguments[2];
+
+  var get_and_update_tuple = fun(self.mailbox[agent]);
+
+  self.mailbox[agent] = Kernel.elem(get_and_update_tuple, 1);
+  return Kernel.elem(get_and_update_tuple, 0);
+};
+
+self.mailbox = self.mailbox || {};
+
+var virtualDom = {};
+
+exports.virtualDom = virtualDom;
+exports.fun = _fun;
+exports.Fetch = Fetch;
+exports.Erlang = Erlang;
+exports.Kernel = Kernel;
+exports.Atom = Atom;
+exports.Enum = Enum;
+exports.Integer = Integer;
+exports.JS = JS;
+exports.List = List;
+exports.Range = Range;
+exports.Tuple = Tuple;
+exports.Agent = Agent;
+exports.Keyword = Keyword;});
+
+
 //# sourceMappingURL=app.js.map

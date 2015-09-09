@@ -1,0 +1,75 @@
+defmodule App do
+  import Phoenix, only: [Socket, LongPoller]
+
+  defp sanitize(html) do
+    JQuery.("<div/>").text(html).html()
+  end
+
+  defp messageTemplate(msg) do
+    username = sanitize(msg.user || "anonymous")
+    body = sanitize(msg.body)
+
+    "<p><a href='#'>[#{username}]</a>&nbsp; #{body}</p>"
+  end
+
+  def init() do
+    socket = JS.new(Socket, ["/socket", %{
+      logger: fn(kind, msg, data) ->
+        :console.debug("#{kind}: #{msg}", data)
+      end
+      }])
+
+    socket.connect(%{user_id: "123"})
+
+    status = JQuery.("#status")
+    messages = JQuery.("messages")
+    input = JQuery.("message-input")
+    username = JQuery.("#username")
+
+    socket.onOpen(fn(ev) ->
+      :console.debug("OPEN", ev)
+    end)
+
+    socket.onError(fn(ev) ->
+      :console.debug("ERROR", ev)
+    end)
+
+    socket.onClose(fn(ev) ->
+      :console.debug("CLOSE", ev)
+    end)
+
+    chan = socket.channel("rooms:lobby", %{})
+
+    chan.join()
+    .receive("ignore", fn() -> :console.error("auth error") end)
+    .receive("ok", fn() -> :console.info("join ok") end)
+    .after(10000, fn() -> :console.info("Connection interruption") end)
+
+    chan.onError(fn(e) ->
+      :console.log("Something went wrong", e)
+    end)
+
+    chan.onClose(fn(e) ->
+      :console.log("channel closed", e)
+    end)
+
+    input.off("keypress").on("keypress", fn(e) ->
+      if e.keyCode == 13 do
+        chan.push("new:msg", %{user: username.val(), body: input.val()})
+        input.val("")
+      end
+    end)
+
+    chan.on("new:msg", fn(msg) ->
+      messages.append(messageTemplate(msg))
+      scrollTo(0, :document.body.scrollHeight)
+    end)
+
+    chan.on("user:entered", fn(msg) ->
+      username = sanitize(msg.user || "anonymous")
+      messages.append("<br/><i>[#{username} entered]</i>")
+    end)
+  end
+
+  init()
+end
