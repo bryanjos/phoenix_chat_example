@@ -11,7 +11,7 @@ config :chat, Chat.Endpoint,
   debug_errors: true,
   cache_static_lookup: false,
   code_reloader: true,
-  watchers: [node: ["node_modules/brunch/bin/brunch", "watch"]]
+  watchers: [{Path.expand("node_modules/gulp/bin/gulp.js"), ["watch"]}]
 
 # Watch static and templates for browser reloading.
 config :chat, Chat.Endpoint,

@@ -36,7 +36,10 @@
     <!-- Begin page content -->
     <%= @inner %>
 
-    <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
-    <script>require("web/static/js/app")</script>
+    <script src="<%= static_path(@conn, "/jspm_packages/system.js") %>"></script>
+    <script src="<%= static_path(@conn, "/config.js") %>"></script>
+    <script>
+      System.import('js/app');
+    </script>
   </body>
 </html>

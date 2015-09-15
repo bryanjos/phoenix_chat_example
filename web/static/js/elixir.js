@@ -833,39 +833,6 @@ let Erlang = {
   bitstring: bitstring
 };
 
-let Fetch = {};
-
-Fetch.__MODULE__ = Erlang.atom("Fetch");
-
-function make_request(url, method, options){
-  options.method = method;
-  return fetch(url, options);
-}
-
-Fetch.delete = function(url, options = {}){
-  return make_request(url, "DELETE", options);
-}
-
-Fetch.get = function(url, options = {}){
-  return make_request(url, "GET", options);
-}
-
-Fetch.head = function(url, options = {}){
-  return make_request(url, "HEAD", options);
-}
-
-Fetch.options = function(url, options = {}){
-  return make_request(url, "OPTIONS", options);
-}
-
-Fetch.post = function(url, options = {}){
-  return make_request(url, "POST", options);
-}
-
-Fetch.put = function(url, options = {}){
-  return make_request(url, "PUT", options);
-}
-
 let Tuple = {};
 
 Tuple.__MODULE__ = Erlang.atom('Tuple');
@@ -1711,6 +1678,4 @@ Agent.get_and_update = function(agent, fun, timeout = 5000){
 
 self.mailbox = self.mailbox || {};
 
-let virtualDom = {}
-
-export { virtualDom, _fun as fun, Fetch, Erlang, Kernel, Atom, Enum, Integer, JS, List, Range, Tuple, Agent, Keyword };
+export { _fun as fun, Erlang, BitString, Kernel, Atom, Enum, Integer, JS, List, Range, Tuple, Agent, Keyword };

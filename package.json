@@ -1,13 +1,26 @@
 {
+  "private": true,
   "repository": {},
-  "dependencies": {
-    "babel-brunch": "^4.0.0",
-    "brunch": "git://github.com/brunch/brunch#5176b6b4bf70cd8cb9dad0058dd3e83e8d983218",
-    "clean-css-brunch": ">= 1.0 < 1.8",
-    "css-brunch": ">= 1.0 < 1.8",
-    "elixirscript-brunch": "0.0.3",
-    "javascript-brunch": ">= 1.0 < 1.8",
-    "sass-brunch": "git://github.com/brunch/sass-brunch.git#master",
-    "uglify-js-brunch": ">= 1.0 < 1.8"
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.2.1",
+    "gulp-cssnext": "^1.0.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-plumber": "^1.0.1",
+    "jspm": "^0.16.1"
+  },
+  "jspm": {
+    "directories": {
+      "baseURL": "priv/static"
+    },
+    "dependencies": {
+      "jquery": "github:components/jquery@^2.1.4"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.8.22",
+      "babel-runtime": "npm:babel-runtime@^5.8.20",
+      "core-js": "npm:core-js@^1.1.0"
+    }
   }
 }
